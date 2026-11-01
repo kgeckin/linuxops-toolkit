@@ -1,0 +1,15 @@
+---
+# Explicit inventory only. No package install, configuration changes or shell commands.
+- name: Approved Linux preflight review
+  hosts: linux_lab
+  gather_facts: true
+  become: false
+  tasks:
+    - name: Show read-only system facts
+      ansible.builtin.debug:
+        msg:
+          os: "{{ ansible_facts['distribution'] }}"
+          version: "{{ ansible_facts['distribution_version'] }}"
+          architecture: "{{ ansible_facts['architecture'] }}"
+          logical_processors: "{{ ansible_facts['processor_vcpus'] | default('unknown') }}"
+          memory_mb: "{{ ansible_facts['memtotal_mb'] }}"

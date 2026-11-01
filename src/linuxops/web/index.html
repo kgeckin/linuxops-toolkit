@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b121b">
+  <meta name="description" content="LinuxOps Toolkit local Linux monitoring and systems observability dashboard">
+  <title>LinuxOps Toolkit | Systems Control Center</title>
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to dashboard</a>
+  <div class="shell">
+    <aside class="sidebar">
+      <a class="brand" href="#overview" aria-label="LinuxOps Toolkit overview">
+        <span class="brand-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 5h10M5 9h14M5 15h14M7 19h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="m9 10 3 3 3-3" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        <span class="brand-text"><strong>LinuxOps<span>.</span></strong><small>TOOLKIT / CONTROL CENTER</small></span>
+      </a>
+      <div class="nav-caption">WORKSPACE</div>
+      <nav aria-label="Dashboard sections" class="nav">
+        <button type="button" data-view="overview" class="nav-item active" aria-current="page"><span class="nav-icon">▦</span>Overview</button>
+        <button type="button" data-view="compute" class="nav-item"><span class="nav-icon">◫</span>Compute & Memory</button>
+        <button type="button" data-view="storage" class="nav-item"><span class="nav-icon">▤</span>Storage</button>
+        <button type="button" data-view="network" class="nav-item"><span class="nav-icon">⌁</span>Network</button>
+        <button type="button" data-view="alerts" class="nav-item"><span class="nav-icon">◇</span>Alerts <span class="nav-count" id="nav-alert-count">0</span></button>
+        <button type="button" data-view="about" class="nav-item"><span class="nav-icon">◎</span>How it works</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="local-device"><div class="device-led"></div><div><strong>LOCAL OBSERVER</strong><small>Active only on this machine</small></div></div>
+        <div class="sidebar-security"><span>◈</span> No network scanning, remote shell or external telemetry.</div>
+        <a class="repo-link" href="https://github.com/kgeckin" target="_blank" rel="noopener noreferrer">Kardelen / GitHub <span>↗</span></a>
+      </div>
+    </aside>
+
+    <div class="workspace" id="main">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>LOCAL WORKSPACE</span><span class="slash">/</span><strong id="crumb">Overview</strong></div>
+        <div class="top-controls">
+          <span class="live-indicator" id="live-indicator"><i></i><span>CONNECTING</span></span>
+          <button type="button" id="auto-refresh" class="icon-btn" title="Pause automatic refresh" aria-label="Pause automatic refresh">Ⅱ</button>
+          <button type="button" id="refresh" class="icon-btn" title="Refresh readings" aria-label="Refresh readings">↻</button>
+          <button type="button" id="theme" class="icon-btn" title="Change appearance" aria-label="Change appearance">◐</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="page-heading">
+          <div><p class="eyebrow">SYSTEM OBSERVABILITY / LINUXOPS 01</p><h1 id="view-title">System overview</h1><p id="view-subtitle" class="page-sub">A measured view of local Linux health, utilization and operating context.</p></div>
+          <div class="page-controls"><span id="updated" class="last-sync">Waiting for first reading</span>
+            <div class="mode-picker" role="group" aria-label="Chart data mode"><button type="button" data-chart-mode="live" class="selected" aria-pressed="true">● Live</button><button type="button" data-chart-mode="history" aria-pressed="false">History</button></div>
+            <label class="range-label" id="history-range" hidden><span class="sr-only">History window</span><select id="range"><option value="15">Last 15 min</option><option value="60" selected>Last 1 hour</option><option value="360">Last 6 hours</option><option value="1440">Last 24 hours</option></select></label></div>
+        </div>
+
+        <div id="error" class="alert-error" role="alert" hidden><span>!</span><div><strong>Unable to reach local API</strong><p id="error-detail">Check that linuxops serve is running on port 8765.</p></div></div>
+        <div class="context-strip"><span class="context-emblem">◈</span><strong>LOCAL SCOPE</strong><p>This dashboard reads the current Linux environment. Inside Docker, values may reflect the container, not the Windows or physical host.</p><span class="context-tag" id="context-label">CHECKING</span></div>
+
+        <section id="screen-overview" class="screen" aria-labelledby="view-title">
+          <div class="kpi-grid">
+            <article class="kpi kpi-accent"><div class="kpi-name"><span>◫</span> PROCESSOR LOAD</div><div class="kpi-number" id="cpu-now">—</div><div class="kpi-caption">CPU utilization · <span id="cores">—</span> logical cores</div><div class="kpi-spark" id="spark-cpu" aria-hidden="true"></div></article>
+            <article class="kpi"><div class="kpi-name"><span>▥</span> MEMORY UTILIZATION</div><div class="kpi-number" id="memory-now">—</div><div class="kpi-caption"><span id="memory-used">—</span> of <span id="memory-total">—</span></div><div class="progress-track"><i id="memory-bar"></i></div></article>
+            <article class="kpi"><div class="kpi-name"><span>▤</span> ROOT FILESYSTEM</div><div class="kpi-number" id="disk-now">—</div><div class="kpi-caption"><span id="disk-used">—</span> of <span id="disk-total">—</span></div><div class="progress-track"><i id="disk-bar"></i></div></article>
+            <article class="kpi"><div class="kpi-name"><span>♧</span> SYSTEM UPTIME</div><div class="kpi-number" id="uptime-now">—</div><div class="kpi-caption">Since the current Linux boot</div><div class="kpi-soft">RUNNING ENVIRONMENT</div></article>
+          </div>
+          <div class="metrics-grid hero-charts">
+            <article class="panel"><div class="panel-heading"><div><p class="eyebrow">CURRENT SYSTEM SIGNAL</p><h2>CPU utilization</h2></div><span class="panel-chip" id="mode-caption">Live data · every 2 seconds</span></div><div class="chart-container" id="cpu-chart" role="img" aria-label="CPU usage over time"></div><div class="chart-footer"><span id="cpu-points">0 samples</span><span>Percentage of sampled CPU time</span></div></article>
+            <article class="panel"><div class="panel-heading"><div><p class="eyebrow">RESOURCE ALLOCATION</p><h2>Memory used</h2></div><span class="panel-chip">SYSTEM MEMORY</span></div><div class="memory-panel"><div class="radial" id="memory-donut" role="img" aria-label="Memory utilization ring"><div><strong id="memory-ring-value">—</strong><small>utilized</small></div></div><div class="radial-stats"><div><span>Used memory</span><strong id="memory-ring-used">—</strong></div><div><span>Available capacity</span><strong id="memory-free">—</strong></div><div><span>Swap used</span><strong id="swap-used">—</strong></div></div></div><div class="chart-footer"><span>Measured via the local Linux kernel</span><span>Read only</span></div></article>
+          </div>
+          <div class="metrics-grid">
+            <article class="panel"><div class="panel-heading"><div><p class="eyebrow">OPERATING STATE</p><h2>System health</h2></div><span class="health-pill" id="health-status">AWAITING DATA</span></div><div class="health-list"><div><span class="health-label"><i class="status-dot"></i>CPU utilization</span><strong id="cpu-health">—</strong></div><div><span class="health-label"><i class="status-dot"></i>Memory pressure</span><strong id="memory-health">—</strong></div><div><span class="health-label"><i class="status-dot"></i>Filesystem capacity</span><strong id="disk-health">—</strong></div><div><span class="health-label"><i class="status-dot"></i>Latest sample</span><strong id="sample-age">—</strong></div></div></article>
+            <article class="panel"><div class="panel-heading"><div><p class="eyebrow">CONNECTIVITY COUNTERS</p><h2>Network transfer</h2></div><span class="panel-chip">CUMULATIVE</span></div><div class="traffic-stats"><div class="traffic"><span class="traffic-icon down">↓</span><div><small>RECEIVED</small><strong id="rx-total">—</strong></div></div><div class="traffic"><span class="traffic-icon up">↑</span><div><small>SENT</small><strong id="tx-total">—</strong></div></div></div><div class="rate-strip"><div><span>LIVE DOWNLOAD RATE</span><strong id="rx-rate-now">Measuring…</strong></div><div><span>LIVE UPLOAD RATE</span><strong id="tx-rate-now">Measuring…</strong></div></div><div class="traffic-explanation">Counters are cumulative since the kernel network interface was initialized. The live rates above are calculated from consecutive kernel counter readings.</div></article>
+          </div>
+        </section>
+
+        <section id="screen-compute" class="screen" hidden>
+          <div class="metrics-grid"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">PROCESSOR TELEMETRY</p><h2>CPU history</h2></div><span class="panel-chip">PERCENT</span></div><div class="chart-container" id="cpu-detail-chart"></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">MEMORY TELEMETRY</p><h2>RAM history</h2></div><span class="panel-chip">PERCENT</span></div><div class="chart-container" id="memory-detail-chart"></div></article></div><article class="panel"><div class="panel-heading"><div><p class="eyebrow">KERNEL LOAD AVERAGE</p><h2>System load</h2></div></div><div class="detail-stats"><div><span>1 minute</span><strong id="load1">—</strong></div><div><span>5 minutes</span><strong id="load5">—</strong></div><div><span>15 minutes</span><strong id="load15">—</strong></div><div><span>Logical CPUs</span><strong id="compute-cores">—</strong></div></div><p class="panel-note">Load averages describe runnable or uninterruptible work, not CPU percentage. Interpretation depends on core count and operating environment.</p></article>
+        </section>
+
+        <section id="screen-storage" class="screen" hidden>
+          <div class="metrics-grid"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">FILESYSTEM UTILIZATION</p><h2>Disk usage trend</h2></div></div><div class="chart-container" id="disk-chart"></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">FILESYSTEM SNAPSHOT</p><h2>Capacity overview</h2></div></div><div class="radial-wrap"><div class="radial" id="disk-donut"><div><strong id="disk-ring-value">—</strong><small>allocated</small></div></div></div><div class="detail-stats two"><div><span>Used</span><strong id="disk-detail-used">—</strong></div><div><span>Free</span><strong id="disk-detail-free">—</strong></div></div></article></div><article class="panel"><div class="panel-heading"><div><p class="eyebrow">MEASUREMENT SCOPE</p><h2>Disk target</h2></div></div><p class="panel-note">Disk usage is measured for one locally configured path. The default is the Linux root filesystem (<code>/</code>). Additional mounts and physical disk health require separate collectors and permission review.</p><div class="target-path" id="disk-mount">/</div></article>
+        </section>
+
+        <section id="screen-network" class="screen" hidden>
+          <div class="metrics-grid"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">TRAFFIC ESTIMATE</p><h2>Received bytes per second</h2></div><span class="panel-chip">DERIVED RATE</span></div><div class="chart-container" id="rx-chart"></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">TRAFFIC ESTIMATE</p><h2>Sent bytes per second</h2></div><span class="panel-chip">DERIVED RATE</span></div><div class="chart-container" id="tx-chart"></div></article></div><div class="metrics-grid"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">KERNEL COUNTERS</p><h2>Network totals</h2></div></div><div class="detail-stats two"><div><span>Packets received</span><strong id="packets-rx">—</strong></div><div><span>Packets sent</span><strong id="packets-tx">—</strong></div></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">INTERPRETATION</p><h2>How rates are calculated</h2></div></div><p class="panel-note">Transfer rate is the positive difference between consecutive cumulative byte counters, divided by elapsed sample time. If a counter resets, the displayed rate becomes zero. This page intentionally avoids collecting interface addresses or remote connections.</p></article></div>
+        </section>
+
+        <section id="screen-alerts" class="screen" hidden>
+          <div class="summary-row"><div><span>Active rules triggered</span><strong id="alerts-active">0</strong></div><div><span>CPU threshold</span><strong>85%</strong></div><div><span>Memory threshold</span><strong>85%</strong></div><div><span>Disk threshold</span><strong>90%</strong></div></div><article class="panel"><div class="panel-heading"><div><p class="eyebrow">TRANSPARENT POLICY ENGINE</p><h2>Current observations</h2></div><span class="panel-chip">NO FALSE PREDICTIONS</span></div><div id="alerts-list" class="alerts-list"><p class="panel-note">Waiting for local telemetry.</p></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">ALERT BEHAVIOR</p><h2>What is evaluated?</h2></div></div><p class="panel-note">Rules evaluate the most recent sample with explicit utilization thresholds. They are not incident tickets, do not execute remediation commands, and do not claim predictive anomaly detection.</p></article>
+        </section>
+
+        <section id="screen-about" class="screen" hidden>
+          <div class="metrics-grid"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">SYSTEM ARCHITECTURE</p><h2>Shared live Linux observer</h2></div></div><div class="architecture"><div class="arch-node">LINUX / WSL <small>Kernel counters via psutil</small></div><div class="arch-line">↓</div><div class="arch-node">LOCAL API <small>2 s SSE stream · 30 s SQLite archive</small></div><div class="arch-line">↓</div><div class="arch-node">WEB CONSOLE <small>Browser charts on 127.0.0.1</small></div></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">QUICK OPERATIONS</p><h2>CLI commands</h2></div></div><div class="command-list"><div><code>linuxops doctor</code><span>Check local prerequisites</span></div><div><code>linuxops snapshot</code><span>Read one real snapshot</span></div><div><code>linuxops watch --count 4</code><span>Capture a short series</span></div><div><code>linuxops report --format csv</code><span>Export stored readings</span></div><div><code>linuxops serve</code><span>Start this local dashboard</span></div></div></article></div><article class="panel"><div class="panel-heading"><div><p class="eyebrow">PRIVACY BY DESIGN</p><h2>Collection boundaries</h2></div></div><p class="panel-note">The collector reads overall CPU, RAM, disk and network counters. It does not read personal files, usernames, running processes, IP addresses, terminal history, passwords or SSH credentials. The dashboard must stay on loopback because it currently has no user authentication. Docker demonstrations show container-scoped measurements and are not proof of host hardware monitoring.</p><a class="inline-link" href="/docs" target="_blank" rel="noopener noreferrer">Explore the API documentation ↗</a></article>
+        </section>
+
+        <footer class="footer"><span>LINUXOPS TOOLKIT / 01 · OBSERVE BEFORE YOU CHANGE</span><span><button type="button" id="export" class="footer-btn">Export CSV ↓</button><a href="/docs" target="_blank" rel="noopener noreferrer">API DOCS ↗</a></span></footer>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

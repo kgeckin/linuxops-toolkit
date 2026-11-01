@@ -1,0 +1,13 @@
+services:
+  linuxops:
+    build: .
+    environment:
+      LINUXOPS_CONTEXT: container
+      LINUXOPS_DB_PATH: /data/telemetry.db
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - linuxops-history:/data
+    restart: unless-stopped
+volumes:
+  linuxops-history:
